@@ -1,25 +1,24 @@
 CC=gcc
 CFLAGS=-Wall -W -ansi -Werror -std=c99
-SRC=src/hash.c src/keccak.c
-MAIN=src/main.c
-OBJMAIN=Build/main.o
-OBJ=Build/hash.o Build/keccak.o 
+OBJBIN=src/hash.o src/keccak.o src/main.o
+OBJLIB=src/hash.o src/keccak.o 
 
-keccak:
+
+%.o : %.c
+	$(CC) -c $(CFLAGS) $< -o $@ 
+
+keccak: $(OBJBIN)
 	clear
 	echo "Building the keccak binary"
-	mkdir Build || true
-	$(CC) -c $(SRC) $(MAIN) $(CFLAGS)
-	mv *.o Build/ || true
-	$(CC) -o keccak $(OBJ) $(OBJMAIN) $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS)
 	chmod +x keccak
 
-keccaklib:
+libkeccak: $(OBJLIB)
 	clear
 	echo "Building the keccak lib"
-	$(CC) -c $(SRC) $(CFLAGS)
-	mv *.o Build/ || true
-	ar -cvq keccak.a $(OBJ)
+	ar -cvq $@.a $^
+	ranlib libkeccak.a
+	cp src/libkeccak.h ./
 
 test:
 	make clean;
@@ -28,4 +27,4 @@ test:
 
 .PHONY : clean
 clean :
-	rm -rf Build/* keccak keccak.a
+	rm -rf src/*.o keccak libkeccak.a libkeccak.h
