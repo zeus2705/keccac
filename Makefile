@@ -20,7 +20,7 @@ libkeccak: $(OBJLIB)
 	ranlib libkeccak.a
 	cp src/libkeccak.h ./
 
-test:
+test: $(OBJBIN)
 	make clean;
 	make keccak;
 	Test/test.sh;
