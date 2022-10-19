@@ -8,7 +8,7 @@ const uint16_t keccakparam_bitrate[4] = { 1152, 1088, 832, 576};
 
 const uint8_t keccakparam_hashsize[4] = { 28, 32, 48, 64};
 
-const uint8_t endbyte_d = 0x06;
+const uint8_t endbyte_d = 0x01;
 
 const uint64_t RoundConstant[24] = {
     0x0000000000000001,
@@ -149,24 +149,19 @@ void keccac_sponge_squeeze(struct hash *result,uint64_t *lanes){
         memcpy(result->bytearr, lanes, result->size);
 }
 
-uint64_t padding_input(uint16_t r, uint16_t blocks, uint64_t sizeinput,uint8_t *input,uint8_t *paddedinput){
-    uint16_t size_block = r/8;
+uint64_t padding_input(uint16_t r, uint64_t sizeinput,uint8_t *input,uint8_t *paddedinput){
+
+    int size_block = r/8;
+    int blocks = sizeinput / size_block;
     size_t block_len = (blocks + 1) * size_block;
 
     /* d = 2^|Mbits| + sum for i=0..|Mbits|-1 of 2^i*Mbits[i]
     P = Mbytes || d || 0x00 || … || 0x00
     P = P xor (0x00 || … || 0x00 || 0x80)*/
-    memset(paddedinput, 0, block_len * sizeof(uint8_t));
-
-    for (uint64_t i = 0; i < sizeinput; i++) {
-        paddedinput[i] = input[i];
-    }
-
+    memcpy(paddedinput,input,sizeinput);
     /* add padding bytes */
-    paddedinput[sizeinput] = 0x01;
-    paddedinput[block_len - 1] = 0x80;
-
-    /* padding */
+    paddedinput[sizeinput] ^= endbyte_d;
+    paddedinput[block_len - 1] ^= 0x80;
     if (sizeinput % size_block == 0) {
         return sizeinput;
     }
@@ -174,44 +169,45 @@ uint64_t padding_input(uint16_t r, uint16_t blocks, uint64_t sizeinput,uint8_t *
     return block_len;
 }
 
+
+#define BUFF_SIZE 4096
+
 struct hash *keccak(enum keccakmode mod, uint8_t *input, uint64_t sizeinput){
     struct hash *result = new_hash(keccakparam_hashsize[mod]);
+    uint8_t buff[BUFF_SIZE] = {0};
     if (!result)
         errx(1,"No enoughs memory");
     uint16_t r =  keccakparam_bitrate[mod];
-    uint64_t lanes[25];
-    for (int i = 0; i < 25; i++)
-        lanes[i] = 0;
-    int size_block = r/8;
-    int blocks = sizeinput / size_block;
-    uint8_t paddedinput[size_block * (blocks + 1)];
-    sizeinput = padding_input(r,blocks,sizeinput,input,paddedinput);
+    uint64_t lanes[25] = {0};
+    int nbabs = 0;
+    while (sizeinput >= 4096){
+        memcpy(buff,(input + 4096 * nbabs),4096);
+        sizeinput -= 4096;
+        nbabs++;
+        keccac_sponge_absorb(r,4096,buff,lanes);
+    }
+    uint8_t paddedinput[4096] = {0};
+    sizeinput = padding_input(r,sizeinput,(input + 4096 * nbabs),paddedinput);
     keccac_sponge_absorb(r,sizeinput,paddedinput,lanes);
     keccac_sponge_squeeze(result,lanes);
     return result;
 }
 
-#define BUFF_SIZE 4096
 struct hash *keccak_file(enum keccakmode mod,int f){
-    uint8_t buff[BUFF_SIZE];
     struct hash *result = new_hash(keccakparam_hashsize[mod]);
+    uint8_t buff[BUFF_SIZE] = {0};
     if (!result)
         errx(1,"No enoughs memory");
     uint16_t r =  keccakparam_bitrate[mod];
-    uint64_t lanes[25];
-    for (int i = 0; i < 25; i++)
-        lanes[i] = 0;
-    int size_block = r/8;
-
+    uint64_t lanes[25] = {0};
     uint64_t buffsize = read(f,buff, BUFF_SIZE);
-    while (buffsize != 0)
-    {
-        int blocks = buffsize / size_block;
-        uint8_t paddedinput[size_block * (blocks + 1)];
-        buffsize = padding_input(r,blocks,buffsize,buff,paddedinput);
-        keccac_sponge_absorb(r,buffsize,paddedinput,lanes);
+    while (buffsize == 4096){
+        keccac_sponge_absorb(r,4096,buff,lanes);
         buffsize = read(f,buff, BUFF_SIZE);
     }
+    uint8_t paddedinput[4096] = {0};
+    buffsize = padding_input(r,buffsize,buff,paddedinput);
+    keccac_sponge_absorb(r,buffsize,paddedinput,lanes);
     keccac_sponge_squeeze(result,lanes);
     return result;
 }
