@@ -1,5 +1,6 @@
 CC=gcc
-CFLAGS=-Wall -W -ansi -Werror -std=c99
+CFLAGS=-Wall -W -ansi -Werror -std=c99 -Ofast
+OBJFAST=src/fast_keccak.c
 OBJBIN=src/hash.o src/keccak.o src/main.o
 OBJLIB=src/hash.o src/keccak.o 
 
@@ -20,6 +21,12 @@ libkeccak: $(OBJLIB)
 	ranlib libkeccak.a
 	cp src/libkeccak.h ./
 
+keccak256: $(OBJFAST)
+	clear
+	echo "Building the keccak binary"
+	$(CC) -o $@ $^ $(CFLAGS)
+	chmod +x keccak256
+
 test: $(OBJBIN)
 	make clean;
 	make keccak;
@@ -27,4 +34,4 @@ test: $(OBJBIN)
 
 .PHONY : clean
 clean :
-	rm -rf src/*.o keccak libkeccak.a libkeccak.h
+	rm -rf src/*.o keccak libkeccak.a libkeccak.h keccak256

@@ -58,9 +58,9 @@ void keccaff1600(uint64_t *lanes){
         int j = 0;
         int index = 0;
         //temporary lane holder cf Pseudo-code description of the permutations
-        uint64_t C[5] = {0};
-        uint64_t D[5] = {0};
-        uint64_t B[25] = {0};
+        uint64_t C[5];
+        uint64_t D[5];
+        uint64_t B[25];
 
         /*
         # θ step
@@ -127,8 +127,8 @@ void keccaff1600(uint64_t *lanes){
     }
 }
 
-void absorb(uint64_t  *lanes, uint8_t *buff ,int nb_block){
-    for (int i = 0; i < nb_block; i++) {
+void absorb(uint64_t  *lanes, uint8_t *buff ,uint8_t nb_block){
+    for (uint8_t i = 0; i < nb_block; i++) {
         uint64_t* block = (uint64_t *)buff + i * ROW;
         for (int j = 0; j < ROW; j++) {
             lanes[j] ^= block[j];
@@ -139,8 +139,7 @@ void absorb(uint64_t  *lanes, uint8_t *buff ,int nb_block){
 
 
 void fast_keccak(int f){
-    uint8_t hash[32] ={0};
-    uint8_t buff[BUFF_SIZE] = {0};
+    uint8_t buff[BUFF_SIZE];
     uint64_t lanes[25] = {0};
     uint16_t buffsize = read(f,buff, BUFF_SIZE);
     while (buffsize == BUFF_SIZE){
@@ -149,10 +148,12 @@ void fast_keccak(int f){
     }
     uint8_t nb_blocks = buffsize / SIZE_BLOCK;
     size_t block_len = (nb_blocks + 1) * SIZE_BLOCK;
+    for (size_t i = buffsize; i < block_len; i++)
+        buff[i] = 0;
     buff[buffsize] ^= endbyte_d;
     buff[block_len - 1] ^= 0x80;
     absorb(lanes,buff,nb_blocks + 1);
-    memcpy(hash, lanes, 32);
+    uint8_t *hash = (uint8_t *)lanes;
     for (size_t i = 0; i < 32; i++)
         printf("%.2x",hash[i]);
     printf("\n");
@@ -161,7 +162,7 @@ void fast_keccak(int f){
 }
 
 int main(){
-    int file = open("limit", O_RDONLY);
+    int file = open("test", O_RDONLY);
     fast_keccak(file);
     close(file);
     return 0;
