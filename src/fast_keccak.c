@@ -12,7 +12,7 @@
 #define SIZE_BLOCK 136
 #define ROW 17
 
-const uint8_t endbyte_d = 0x01;
+const uint8_t endbyte_d = 0x06;
 
 const uint64_t RoundConstant[24] = {
     0x0000000000000001,
@@ -50,17 +50,22 @@ const uint8_t ROTOFF[25] = {
     18, 2, 61, 56, 14,
 };
 
+
+
 void keccaff1600(uint64_t *lanes){
+     //temporary state permutaion holder cf Pseudo-code description of the permutations
+    uint64_t C[5];
+    uint64_t D[5];
+    uint64_t B[25];
+
     for (uint16_t rounds = 0; rounds < 24; rounds++){
         //A == lanes
 
         int i = 0;
         int j = 0;
         int index = 0;
-        //temporary lane holder cf Pseudo-code description of the permutations
-        uint64_t C[5];
-        uint64_t D[5];
-        uint64_t B[25];
+       
+       
 
         /*
         # θ step
@@ -128,31 +133,59 @@ void keccaff1600(uint64_t *lanes){
 }
 
 void absorb(uint64_t  *lanes, uint8_t *buff ,uint8_t nb_block){
+    //for each block Pi in P
     for (uint8_t i = 0; i < nb_block; i++) {
+        //S[x,y] = S[x,y] xor Pi[x+5*y],          for (x,y) such that x+5*y < r/w
         uint64_t* block = (uint64_t *)buff + i * ROW;
         for (int j = 0; j < ROW; j++) {
             lanes[j] ^= block[j];
         }
+        //S = Keccak-f[r+c](S)
         keccaff1600(lanes);
     }
 }
 
 
 void fast_keccak(int f){
+    //***** Initialization *******//
+    //buffer where the file is read
     uint8_t buff[BUFF_SIZE];
+    //Permutation Staet array (A)
     uint64_t lanes[25] = {0};
+    
+
+
+    //***** Absorbing phase *******//
     uint16_t buffsize = read(f,buff, BUFF_SIZE);
     while (buffsize == BUFF_SIZE){
+        //Absorbing all the buffer (60 blocks)
         absorb(lanes,buff,60);
+        //refill the buffer
         buffsize = read(f,buff, BUFF_SIZE);
     }
+    //buffer not full
+    //calculating the number of full block in the buffer
     uint8_t nb_blocks = buffsize / SIZE_BLOCK;
+    //Where is the last index of the last incomplete in the buffer
     size_t block_len = (nb_blocks + 1) * SIZE_BLOCK;
+
+    //***** Padding *******//
+    //filling the incomplete block of 0
     for (size_t i = buffsize; i < block_len; i++)
         buff[i] = 0;
+
+    //Padding Byte
+    //Mbytes || d || 0x00 || … || 0x00
     buff[buffsize] ^= endbyte_d;
-    buff[block_len - 1] ^= 0x80;
+    //P xor (0x00 || … || 0x00 || 0x80)
+    buff[block_len - 1] = 0x80;
+    
+    //absorb all the block in the buffer
     absorb(lanes,buff,nb_blocks + 1);
+    //***** End of the absorbing phase *******//
+
+
+    //***** Squeezing *******//
     uint8_t *hash = (uint8_t *)lanes;
     for (size_t i = 0; i < 32; i++)
         printf("%.2x",hash[i]);
@@ -161,9 +194,27 @@ void fast_keccak(int f){
 
 }
 
-int main(){
-    int file = open("test", O_RDONLY);
-    fast_keccak(file);
-    close(file);
+int main(int argc, char** argv){
+    //Read the stdin
+    if (argc == 1){
+        fast_keccak(0);
+        return 0;
+    }
+    int fd =0;
+    //Read every file put in arguments
+    for (int i = 1; i < argc; i++){
+        if (strcmp(argv[i], "-h") == 0){
+            printf("Option:\n\t-h display this message\nUsage :\n\tSHA3-256 FILE1 FILE2 ... FILEN\n\tSHA3-256 < FILE\nOutput :\n\tThe program will return a hash in hex format following the SHA3-256 algorithm policies check https://keccak.team/keccak_specs_summary.html for more information\n");
+            return 0;
+        }
+        fd = open(argv[i], O_RDONLY);
+        if (fd > 0) {
+            printf("sha3-256(%s): ",argv[i]);
+            fast_keccak(fd);
+            close(fd);
+        }
+        else
+            printf("Could not open the file %s\n",argv[i]);
+    }
     return 0;
 }

@@ -12,26 +12,26 @@ keccak: $(OBJBIN)
 	clear
 	echo "Building the keccak binary"
 	$(CC) -o $@ $^ $(CFLAGS)
-	chmod +x keccak
+	chmod +x $^
 
 libkeccak: $(OBJLIB)
 	clear
 	echo "Building the keccak lib"
 	ar -cvq $@.a $^
-	ranlib libkeccak.a
+	ranlib $^.a
 	cp src/libkeccak.h ./
 
-keccak256: $(OBJFAST)
+SHA3-256: $(OBJFAST)
 	clear
 	echo "Building the keccak binary"
 	$(CC) -o $@ $^ $(CFLAGS)
-	chmod +x keccak256
+	chmod +x $^
 
-test: $(OBJBIN)
+test: $(OBJFAST)
 	make clean;
-	make keccak;
+	make SHA3-256;
 	Test/test.sh;
 
 .PHONY : clean
 clean :
-	rm -rf src/*.o keccak libkeccak.a libkeccak.h keccak256
+	rm -rf src/*.o keccak libkeccak.a libkeccak.h SHA3-256
