@@ -6,7 +6,7 @@
 SHA3-256 - compute SHA3-256 message digest
 
 # SYNOPSIS
-**sha256sum** [OPTION]... [FILE]...
+**SHA3-256** [OPTION]... [FILE]...
 
 # DESCRIPTION
 **SHA3-256** Print SHA256 (256-bit) checksums. With no FILE, or when FILE is -, read standard input.
