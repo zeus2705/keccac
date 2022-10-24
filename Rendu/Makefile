@@ -12,6 +12,9 @@ SHA3-256: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 	chmod +x $^
 
+man:
+	pandoc README.md -s -t man > sha3-256.man
+
 test: $(OBJFAST)
 	make clean;
 	make SHA3-256;
@@ -19,4 +22,4 @@ test: $(OBJFAST)
 
 .PHONY : clean
 clean :
-	rm SHA3-256 || true
+	rm SHA3-256 sha3-256.man || true

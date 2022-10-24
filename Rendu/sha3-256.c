@@ -203,9 +203,13 @@ int main(int argc, char** argv){
     int fd =0;
     //Read every file put in arguments
     for (int i = 1; i < argc; i++){
-        if (strcmp(argv[i], "-h") == 0){
-            printf("Option:\n\t-h display this message\nUsage :\n\tSHA3-256 FILE1 FILE2 ... FILEN\n\tSHA3-256 < FILE\nOutput :\n\tThe program will return a hash in hex format following the SHA3-256 algorithm policies check https://keccak.team/keccak_specs_summary.html for more information\n");
+        if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help")  == 0){
+            printf("Option:\n\t-h, --help display this message\nUsage :\n\tSHA3-256 FILE1 FILE2 ... FILEN\n\tSHA3-256 < FILE\nOutput :\n\tThe program will return a hash in hex format following the SHA3-256 algorithm policies check https://keccak.team/keccak_specs_summary.html for more information\n");
             return 0;
+        }
+        if (strcmp(argv[i], "-") == 0){
+            fast_keccak(0);
+            continue;
         }
         fd = open(argv[i], O_RDONLY);
         if (fd > 0) {
