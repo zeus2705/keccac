@@ -1,47 +1,68 @@
-% SHA3-256(1) SHA3-256 1.0
-% Antoine REMY & Stanislas MEDRANO
-% October 2002
+# Implementation of the SHA3-256 algorithm based on Keccak
 
-# NAME
-SHA3-256 - compute SHA3-256 message digest
+# Compilation
 
-# SYNOPSIS
-**SHA3-256** [OPTION]... [FILE]...
+### To compile the binary:
 
-# DESCRIPTION
-**SHA3-256** Print SHA256 (256-bit) checksums. With no FILE, or when FILE is -, read standard input.
+```
+42sh$ make SHA3-256
+```
 
-# OPTIONS
-**-h**, **--help**
-: Display an help message
+### Generate the `man` with `pandoc`:
 
-# EXAMPLE
-**SHA3-256 | SHA3-256 -**
-: Hash the standard input until an **EOF** or an **EOL** then display the hash in hexadecimal
+[`pandoc`](https://github.com/jgm/pandoc) command must be installed: 
 
-**SHA3-256 -h | SHA3-256 --help**
-: Display the software usage message and exit.
+```
+42sh$ make man
+```
 
-**SHA3-256 file_name**
-: compute SHA3-256 and display the result in hexadecimal
+Launch the local `man`:
+```
+42sh$ man -l sha3-256.man
+```
 
-# EXIT VALUES
-**0**
-: Sucess
+### To clean temporary file and compiled file use:
+```
+42sh$ make clean
+```
 
-**1**
-: Invalid file name
+### To start the test suite use:
 
-# BUGS
-None
+```
+42sh$ make test
+```
+# Usage
 
+### Basic information about the binary
+```
+42sh$ ./SHA3-256 --help
+Option:
+	-h, --help display this message
+Usage:
+	SHA3-256 FILE1 FILE2 ... FILEN
+	SHA3-256 < FILE
+Output:
+	The program will return a hash in hex format following the SHA3-256 algorithm policies check https://keccak.team/keccak_specs_summary.html for more information
+```
 
-# COPYRIGHT
-Copyright © 2020 Free Software Foundation, Inc.  License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
-This is free software: you are free to change and redistribute it.  There is NO WARRANTY, to the extent permitted by law.
+### Example
 
-# AUTHOR
-Written by Antoine REMY and Stanislas MEDRANO
+Checksum a file:
 
-# SEE ALSO
-Full documentation on the SHA3-256 algorithm https://keccak.team/keccak_specs_summary.html
+```
+42sh$ ./SHA3-256 Test/testfile/small 
+sha3-256(Test/testfile/small): c65bb706eed8bf7bef71dc0a97f510797f384d3fd6cd8cd6a04a4fa8ef410fa1
+```
+
+Alternative method:
+```
+42sh$ ./SHA3-256 < Test/testfile/small
+c65bb706eed8bf7bef71dc0a97f510797f384d3fd6cd8cd6a04a4fa8ef410fa1
+```
+
+Checksum a stream:
+```
+42sh$ ./SHA3-256 -
+OpenBSD gets updated as often as its users bathe << You don't need updates when you make things perfect in the first try.
+f1b3a10375c8d81826185c763cdd7910ac06990c273e4909348f229d27a62e31
+```

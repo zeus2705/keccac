@@ -3,7 +3,7 @@ CFLAGS=-Wall -W -ansi -Werror -std=c99 -Ofast
 OBJ=sha3-256.c
 
 
-%.o : %.c
+%.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@ 
 
 SHA3-256: $(OBJ)
@@ -13,13 +13,13 @@ SHA3-256: $(OBJ)
 	chmod +x $^
 
 man:
-	pandoc README.md -s -t man > sha3-256.man
+	pandoc sha3-256-man.md -s -t man > sha3-256.man
 
 test: $(OBJFAST)
 	make clean;
 	make SHA3-256;
 	Test/test.sh;
 
-.PHONY : clean
-clean :
-	rm SHA3-256 sha3-256.man || true
+.PHONY: clean
+clean:
+	rm SHA3-256 sha3-256.man 2>/dev/null || true

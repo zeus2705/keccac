@@ -53,7 +53,7 @@ const uint8_t ROTOFF[25] = {
 
 
 void keccaff1600(uint64_t *lanes){
-     //temporary state permutaion holder cf Pseudo-code description of the permutations
+     //temporary state permutation holder cf. Pseudo-code description of the permutations
     uint64_t C[5];
     uint64_t D[5];
     uint64_t B[25];
@@ -107,7 +107,7 @@ void keccaff1600(uint64_t *lanes){
             }
         }
 
-        //x bizzare
+        //x bizarre
         /*
         # χ step
         A[x,y] = B[x,y] xor ((not B[x+1,y]) and B[x+2,y]),  for (x,y) in (0…4,0…4)
@@ -150,7 +150,7 @@ void fast_keccak(int f){
     //***** Initialization *******//
     //buffer where the file is read
     uint8_t buff[BUFF_SIZE];
-    //Permutation Staet array (A)
+    //Permutation State array (A)
     uint64_t lanes[25] = {0};
     
 
@@ -180,7 +180,7 @@ void fast_keccak(int f){
     //P xor (0x00 || … || 0x00 || 0x80)
     buff[block_len - 1] = 0x80;
     
-    //absorb all the block in the buffer
+    //absorb all the blocks in the buffer
     absorb(lanes,buff,nb_blocks + 1);
     //***** End of the absorbing phase *******//
 
@@ -204,7 +204,7 @@ int main(int argc, char** argv){
     //Read every file put in arguments
     for (int i = 1; i < argc; i++){
         if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help")  == 0){
-            printf("Option:\n\t-h, --help display this message\nUsage :\n\tSHA3-256 FILE1 FILE2 ... FILEN\n\tSHA3-256 < FILE\nOutput :\n\tThe program will return a hash in hex format following the SHA3-256 algorithm policies check https://keccak.team/keccak_specs_summary.html for more information\n");
+            printf("Option:\n\t-h, --help display this message\nUsage:\n\tSHA3-256 FILE1 FILE2 ... FILEN\n\tSHA3-256 < FILE\nOutput:\n\tThe program will return a hash in hex format following the SHA3-256 algorithm policies check https://keccak.team/keccak_specs_summary.html for more information\n");
             return 0;
         }
         if (strcmp(argv[i], "-") == 0){
