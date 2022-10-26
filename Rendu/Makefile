@@ -6,7 +6,6 @@ SHA3-256: $(OBJ)
 	clear
 	echo "Building the keccak binary"
 	$(CC) -o $@ $(OBJ) $(CFLAGS)
-	chmod +x $^
 
 man:
 	pandoc sha3-256-man.md -s -t man > sha3-256.man
