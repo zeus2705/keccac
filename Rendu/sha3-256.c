@@ -10,9 +10,9 @@
 #define BUFF_SIZE 8160
 #define R 1088
 #define SIZE_BLOCK 136
-#define ROW 17
+#define PACKET_IN_SPONGE_LEN 17
 
-const uint8_t endbyte_d = 0x06;
+const uint8_t endbyte_d = 0x06  ;
 
 const uint64_t RoundConstant[24] = {
     0x0000000000000001,
@@ -136,8 +136,8 @@ void absorb(uint64_t  *lanes, uint8_t *buff ,uint8_t nb_block){
     //for each block Pi in P
     for (uint8_t i = 0; i < nb_block; i++) {
         //S[x,y] = S[x,y] xor Pi[x+5*y],          for (x,y) such that x+5*y < r/w
-        uint64_t* block = (uint64_t *)buff + i * ROW;
-        for (int j = 0; j < ROW; j++) {
+        uint64_t* block = (uint64_t *)buff + i * PACKET_IN_SPONGE_LEN;
+        for (int j = 0; j < PACKET_IN_SPONGE_LEN; j++) {
             lanes[j] ^= block[j];
         }
         //S = Keccak-f[r+c](S)
