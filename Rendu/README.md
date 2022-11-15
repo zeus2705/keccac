@@ -10,7 +10,7 @@
 
 ### Generate the `man` with `pandoc`:
 
-[`pandoc`](https://github.com/jgm/pandoc) command must be installed: 
+> ⚠️ [`pandoc`](https://github.com/jgm/pandoc) command must be installed: ⚠️
 
 ```
 42sh$ make man
@@ -27,6 +27,8 @@ Launch the local `man`:
 ```
 
 ### To start the test suite use:
+
+> ⚠️ **`OpenSSL` with support of `sha3-256` algorithm must be installed.** ⚠️
 
 ```
 42sh$ make test
